@@ -1,7 +1,7 @@
 # Bot Package
 # __init__.py
 
-from .main import main, load_config
+from .main import main, TelegramAccountManagerBot
 from .handlers import (
     start_command, help_command, stats_command,
     add_account_start, add_account_phone, add_account_code, add_account_2fa,
@@ -19,7 +19,7 @@ from .keyboards import (
 from .states import States, CallbackPatterns
 
 __all__ = [
-    'main', 'load_config',
+    'main', 'TelegramAccountManagerBot',
     'start_command', 'help_command', 'stats_command',
     'add_account_start', 'add_account_phone', 'add_account_code', 'add_account_2fa',
     'list_accounts', 'delete_account', 'select_country', 'select_date', 'select_account',

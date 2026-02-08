@@ -4,6 +4,7 @@
 import os
 import zipfile
 import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional, BinaryIO
 from datetime import datetime
@@ -235,8 +236,6 @@ def get_session_info(session_file: Path) -> dict:
 
 
 if __name__ == '__main__':
-    import tempfile
-    
     # Test export functionality
     print("Testing session export utilities...")
     
