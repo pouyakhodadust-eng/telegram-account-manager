@@ -25,10 +25,18 @@ class CountryDetector:
     - Country name translations (optional)
     """
     
+    # Canadian area codes for distinguishing Canada from US (both use +1)
+    CANADIAN_AREA_CODES = frozenset({
+        "204", "226", "236", "249", "250", "257", "289", "306", "343", "365",
+        "368", "403", "416", "418", "428", "431", "437", "438", "450", "468",
+        "474", "506", "514", "519", "548", "579", "581", "587", "604", "613",
+        "639", "647", "672", "683", "705", "709", "742", "778", "780", "782",
+        "807", "819", "825", "867", "873", "902", "905"
+    })
+    
     # Common country code mappings for quick reference
     COUNTRY_CODES = {
-        "+1": "United States",
-        "+1": "Canada",
+        "+1": "North America (+1)",  # Special: distinguishes US/Canada by area code
         "+7": "Russia",
         "+20": "Egypt",
         "+27": "South Africa",
@@ -310,18 +318,27 @@ class CountryDetector:
             country_code = f"+{parsed.country_code}"
             national_number = str(parsed.national_number)
             
-            # Get country name from libphonenumber
-            country_name = geocoder.description_for_number(
-                parsed, 
-                self.language
-            )
-            
-            # Fallback to our mapping if libphonenumber doesn't have it
-            if not country_name or country_name == "Unknown":
-                country_name = self.COUNTRY_CODES.get(
-                    country_code, 
-                    f"Unknown ({country_code})"
+            # Special handling for +1 (US and Canada)
+            if country_code == "+1":
+                # Extract area code (first 3 digits of national number)
+                area_code = national_number[:3] if len(national_number) >= 3 else ""
+                if area_code in self.CANADIAN_AREA_CODES:
+                    country_name = "Canada"
+                else:
+                    country_name = "United States"
+            else:
+                # Get country name from libphonenumber
+                country_name = geocoder.description_for_number(
+                    parsed, 
+                    self.language
                 )
+                
+                # Fallback to our mapping if libphonenumber doesn't have it
+                if not country_name or country_name == "Unknown":
+                    country_name = self.COUNTRY_CODES.get(
+                        country_code, 
+                        f"Unknown ({country_code})"
+                    )
             
             # Get region code
             region_code = geocoder.region_code_for_number(parsed)

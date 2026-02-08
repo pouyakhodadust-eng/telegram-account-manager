@@ -1,0 +1,10 @@
+# Telegram User Whitelist
+# Add one Telegram user ID per line
+# User IDs must be numeric
+
+# Admin User IDs (full access)
+123456789
+987654321
+
+# Additional whitelisted users
+# Add user IDs below this line

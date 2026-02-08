@@ -1,42 +1,76 @@
-# Telegram Account Manager - Dockerfile
-FROM python:3.11-slim-bookworm
+# Telegram Account Management Bot - Dockerfile
+# Multi-stage build for production deployment
 
-# Set working directory
-WORKDIR /app
+# ============================================================================
+# Build Stage
+# ============================================================================
+FROM python:3.11-slim-bookworm AS builder
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /build
 
-# Install system dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# ============================================================================
+# Production Stage
+# ============================================================================
+FROM python:3.11-slim-bookworm AS production
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+
+# Copy installed Python packages
+COPY --from=builder /install /usr/local
 
 # Copy application code
-COPY . .
+COPY --chown=appuser:appgroup . .
 
-# Create necessary directories
-RUN mkdir -p \
-    data/sessions \
-    data/exports \
-    logs
+# Create required directories
+RUN mkdir -p /app/data/{sessions,exports,logs} && \
+    chown -R appuser:appgroup /app
 
-# Expose port (if needed for any web interface)
-EXPOSE 8000
+# Switch to non-root user
+USER appuser
+
+# Environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import src.bot.main" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:8080/health')" || exit 1
 
-# Run the bot
-CMD ["python", "-m", "src.bot.main"]
+# Expose port (for health checks and metrics)
+EXPOSE 8080
+
+# Entry point
+ENTRYPOINT ["python", "-m", "uvicorn", "bot.web:app", "--host", "0.0.0.0", "--port", "8080"]
+
+# ============================================================================
+# Development Stage (optional)
+# ============================================================================
+FROM production AS development
+
+# Install development dependencies
+RUN pip install --no-cache-dir --prefix=/install \
+    pytest \
+    pytest-asyncio \
+    black \
+    flake8 \
+    mypy
+
+# Re-copy with development files
+COPY --chown=appuser:appgroup . .
+
+CMD ["python", "-m", "bot.main"]

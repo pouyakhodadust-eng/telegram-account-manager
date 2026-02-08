@@ -1,273 +1,240 @@
-"""
-Telegram Account Manager - Proxy Management Utilities
+# Telegram Account Management Bot - SOCKS5 Proxy Utility
+# Handle proxy validation and configuration
 
-SOCKS5 proxy support for preventing Telegram account bans.
-"""
-
-import socket
-from dataclasses import dataclass
-from typing import Optional
+import re
+from typing import Optional, Tuple
 from urllib.parse import urlparse
 
-import httpx
+# SOCKS5 proxy regex patterns
+SOCKS5_PATTERN = re.compile(
+    r'^(?:(?P<scheme>socks5)://)?'
+    r'(?:(?P<user>[^:]+):(?P<pass>[^@]+)@)?'
+    r'(?P<host>[^:]+):(?P<port>\d+)$',
+    re.IGNORECASE
+)
 
 
-@dataclass
-class SOCKS5Proxy:
+def validate_proxy(host: str, port: int, username: Optional[str] = None, password: Optional[str] = None) -> Tuple[bool, str]:
     """
-    SOCKS5 proxy configuration.
-    
-    Attributes:
-        host: Proxy server hostname or IP
-        port: Proxy server port
-        username: Authentication username (optional)
-        password: Authentication password (optional)
-        proxy_type: socks5, socks4, http
-    """
-    host: str
-    port: int
-    username: Optional[str] = None
-    password: Optional[str] = None
-    proxy_type: str = "socks5"
-    
-    @property
-    def url(self) -> str:
-        """Get the proxy URL for Telethon."""
-        if self.username and self.password:
-            return f"socks5://{self.username}:{self.password}@{self.host}:{self.port}"
-        return f"socks5://{self.host}:{self.port}"
-    
-    @property
-    def is_authenticated(self) -> bool:
-        """Check if proxy requires authentication."""
-        return bool(self.username and self.password)
-    
-    def validate(self) -> bool:
-        """
-        Validate proxy configuration.
-        
-        Returns:
-            True if valid, False otherwise
-        """
-        if not self.host or not self.host.strip():
-            return False
-        
-        if not isinstance(self.port, int) or not (1 <= self.port <= 65535):
-            return False
-        
-        return True
-
-
-class ProxyManager:
-    """
-    Manager for SOCKS5 proxies.
-    
-    Features:
-    - Validate proxy connectivity
-    - Test proxy authentication
-    - Rotate proxies
-    """
-    
-    def __init__(self):
-        """Initialize the proxy manager."""
-        self._proxies: dict[int, SOCKS5Proxy] = {}
-    
-    def add_proxy(self, user_id: int, proxy: SOCKS5Proxy) -> bool:
-        """
-        Add a proxy for a user.
-        
-        Args:
-            user_id: Telegram user ID
-            proxy: Proxy configuration
-            
-        Returns:
-            True if added successfully
-        """
-        if not proxy.validate():
-            return False
-        
-        self._proxies[user_id] = proxy
-        return True
-    
-    def remove_proxy(self, user_id: int, proxy_id: int) -> bool:
-        """
-        Remove a proxy for a user.
-        
-        Args:
-            user_id: Telegram user ID
-            proxy_id: Proxy ID
-            
-        Returns:
-            True if removed successfully
-        """
-        # TODO: Implement with database
-        return False
-    
-    def get_proxy(self, user_id: int) -> Optional[SOCKS5Proxy]:
-        """
-        Get the active proxy for a user.
-        
-        Args:
-            user_id: Telegram user ID
-            
-        Returns:
-            Proxy configuration or None
-        """
-        return self._proxies.get(user_id)
-    
-    async def test_connection(
-        self, 
-        proxy: SOCKS5Proxy,
-        timeout: float = 10.0
-    ) -> tuple[bool, str]:
-        """
-        Test if a proxy connection works.
-        
-        Args:
-            proxy: Proxy configuration
-            timeout: Connection timeout in seconds
-            
-        Returns:
-            Tuple of (success, message)
-        """
-        try:
-            async with httpx.AsyncClient(
-                timeout=timeout,
-                proxies={
-                    "http": proxy.url,
-                    "https": proxy.url,
-                },
-            ) as client:
-                # Test connection to Telegram
-                response = await client.get(
-                    "https://api.telegram.org",
-                    timeout=timeout,
-                )
-                
-                if response.status_code == 200:
-                    return True, "Proxy connection successful"
-                else:
-                    return False, f"Connection failed: HTTP {response.status_code}"
-                    
-        except httpx.TimeoutException:
-            return False, "Connection timed out"
-        except httpx.ConnectError as e:
-            return False, f"Connection error: {str(e)}"
-        except Exception as e:
-            return False, f"Error: {str(e)}"
-    
-    async def test_authentication(
-        self, 
-        proxy: SOCKS5Proxy,
-        timeout: float = 10.0
-    ) -> tuple[bool, str]:
-        """
-        Test proxy authentication.
-        
-        Args:
-            proxy: Proxy configuration
-            timeout: Authentication timeout
-            
-        Returns:
-            Tuple of (success, message)
-        """
-        if not proxy.is_authenticated:
-            return True, "No authentication required"
-        
-        # Test authentication by connecting
-        success, message = await self.test_connection(proxy, timeout)
-        
-        if success:
-            return True, "Authentication successful"
-        
-        return False, f"Authentication failed: {message}"
-    
-    @staticmethod
-    def parse_proxy_url(url: str) -> Optional[SOCKS5Proxy]:
-        """
-        Parse a proxy URL string.
-        
-        Args:
-            url: Proxy URL (e.g., socks5://host:port or socks5://user:pass@host:port)
-            
-        Returns:
-            SOCKS5Proxy object or None if invalid
-        """
-        try:
-            parsed = urlparse(url)
-            
-            host = parsed.hostname
-            port = parsed.port
-            
-            if not host or not port:
-                return None
-            
-            # Determine proxy type
-            proxy_type = parsed.scheme
-            
-            # Extract credentials
-            username = parsed.username
-            password = parsed.password
-            
-            return SOCKS5Proxy(
-                host=host,
-                port=port,
-                username=username,
-                password=password,
-                proxy_type=proxy_type,
-            )
-            
-        except Exception:
-            return None
-    
-    @staticmethod
-    def format_proxy_for_display(proxy: SOCKS5Proxy) -> str:
-        """
-        Format a proxy for display (masked credentials).
-        
-        Args:
-            proxy: Proxy configuration
-            
-        Returns:
-            Formatted string
-        """
-        if proxy.is_authenticated:
-            return f"socks5://***:***@{proxy.host}:{proxy.port}"
-        return f"socks5://{proxy.host}:{proxy.port}"
-
-
-# Global proxy manager instance
-proxy_manager = ProxyManager()
-
-
-def validate_proxy_config(
-    host: str,
-    port: int,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
-) -> tuple[bool, str]:
-    """
-    Validate proxy configuration.
+    Validate SOCKS5 proxy configuration.
     
     Args:
-        host: Proxy host
+        host: Proxy host (IP or domain)
         port: Proxy port
-        username: Username (optional)
-        password: Password (optional)
+        username: Optional username for authentication
+        password: Optional password for authentication
         
     Returns:
         Tuple of (is_valid, error_message)
     """
     # Validate host
-    if not host or not host.strip():
+    if not host or len(host) < 1:
         return False, "Host cannot be empty"
     
+    if len(host) > 255:
+        return False, "Host name is too long"
+    
+    # Check for valid IP or domain
+    ip_pattern = re.compile(
+        r'^(\d{1,3}\.){3}\d{1,3}$'
+    )
+    domain_pattern = re.compile(
+        r'^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$'
+    )
+    
+    if not (ip_pattern.match(host) or domain_pattern.match(host)):
+        return False, "Invalid host format"
+    
     # Validate port
-    if not isinstance(port, int) or not (1 <= port <= 65535):
+    if not (1 <= port <= 65535):
         return False, "Port must be between 1 and 65535"
     
-    # Validate credentials
-    if (username and not password) or (password and not username):
-        return False, "Both username and password must be provided"
+    # Validate credentials if provided
+    if username:
+        if len(username) > 255:
+            return False, "Username is too long"
+        if ':' in username:
+            return False, "Username cannot contain colons"
     
-    return True, "Valid"
+    if password:
+        if len(password) > 255:
+            return False, "Password is too long"
+    
+    return True, ""
+
+
+def parse_proxy_string(proxy_string: str) -> Optional[dict]:
+    """
+    Parse a proxy string in various formats.
+    
+    Supported formats:
+    - host:port
+    - host:port:username:password
+    - socks5://host:port
+    - socks5://username:password@host:port
+    
+    Args:
+        proxy_string: Proxy configuration string
+        
+    Returns:
+        Dictionary with proxy configuration or None if invalid
+    """
+    if not proxy_string:
+        return None
+    
+    # Try SOCKS5 pattern first
+    match = SOCKS5_PATTERN.match(proxy_string.strip())
+    
+    if match:
+        groups = match.groupdict()
+        return {
+            'scheme': groups.get('scheme', 'socks5'),
+            'host': groups['host'],
+            'port': int(groups['port']),
+            'username': groups.get('user'),
+            'password': groups.get('pass')
+        }
+    
+    # Try URL format
+    if '://' in proxy_string:
+        try:
+            parsed = urlparse(proxy_string)
+            
+            if parsed.scheme in ['socks5', 'socks5h']:
+                return {
+                    'scheme': 'socks5',
+                    'host': parsed.hostname,
+                    'port': parsed.port,
+                    'username': parsed.username,
+                    'password': parsed.password
+                }
+        except Exception:
+            pass
+    
+    # Try simple host:port format
+    try:
+        host, port = proxy_string.rsplit(':', 1)
+        return {
+            'scheme': 'socks5',
+            'host': host.strip(),
+            'port': int(port.strip()),
+            'username': None,
+            'password': None
+        }
+    except (ValueError, AttributeError):
+        pass
+    
+    return None
+
+
+def create_proxy_url(host: str, port: int, username: Optional[str] = None, password: Optional[str] = None) -> str:
+    """
+    Create a SOCKS5 proxy URL.
+    
+    Args:
+        host: Proxy host
+        port: Proxy port
+        username: Optional username
+        password: Optional password
+        
+    Returns:
+        Proxy URL string
+    """
+    if username and password:
+        return f"socks5://{username}:{password}@{host}:{port}"
+    else:
+        return f"socks5://{host}:{port}"
+
+
+def parse_telethon_proxy(proxy_dict: dict) -> dict:
+    """
+    Parse proxy configuration for Telethon.
+    
+    Telethon expects: (proxy_type, proxy_addr, port, rdns, username, password)
+    
+    Args:
+        proxy_dict: Proxy configuration dictionary
+        
+    Returns:
+        Telethon-compatible proxy tuple
+    """
+    return (
+        'socks5',  # proxy type
+        proxy_dict.get('host', ''),
+        proxy_dict.get('port', 1080),
+        True,  # rdns
+        proxy_dict.get('username'),
+        proxy_dict.get('password')
+    )
+
+
+def parse_pyrogram_proxy(proxy_dict: dict) -> dict:
+    """
+    Parse proxy configuration for Pyrogram.
+    
+    Pyrogram expects: {"scheme": "socks5", "hostname": "...", "port": ..., ...}
+    
+    Args:
+        proxy_dict: Proxy configuration dictionary
+        
+    Returns:
+        Pyrogram-compatible proxy dictionary
+    """
+    return {
+        'scheme': 'socks5',
+        'hostname': proxy_dict.get('host', ''),
+        'port': proxy_dict.get('port', 1080),
+        'username': proxy_dict.get('username'),
+        'password': proxy_dict.get('password')
+    }
+
+
+def test_proxy_connection(proxy_dict: dict, timeout: float = 5.0) -> Tuple[bool, str]:
+    """
+    Test if a proxy is reachable.
+    
+    Args:
+        proxy_dict: Proxy configuration dictionary
+        timeout: Connection timeout in seconds
+        
+    Returns:
+        Tuple of (is_reachable, message)
+    """
+    import socket
+    
+    host = proxy_dict.get('host')
+    port = proxy_dict.get('port', 1080)
+    
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        sock.connect((host, port))
+        sock.close()
+        return True, f"Proxy {host}:{port} is reachable"
+    except socket.error as e:
+        return False, f"Failed to connect to proxy: {e}"
+
+
+if __name__ == '__main__':
+    # Test the module
+    test_cases = [
+        "192.168.1.1:1080",
+        "proxy.example.com:1080",
+        "user:pass@192.168.1.1:1080",
+        "socks5://proxy.example.com:1080",
+        "socks5://user:pass@proxy.example.com:1080",
+    ]
+    
+    for test in test_cases:
+        result = parse_proxy_string(test)
+        print(f"\nInput: {test}")
+        print(f"Parsed: {result}")
+        
+        if result:
+            valid, msg = validate_proxy(
+                result['host'],
+                result['port'],
+                result.get('username'),
+                result.get('password')
+            )
+            print(f"Valid: {valid} - {msg}")
