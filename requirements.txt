@@ -1,0 +1,40 @@
+# Telegram Account Management Bot - Requirements
+# Python dependencies for the bot
+
+# Telegram Bot Framework
+Telethon>=1.24.0
+pyrogram>=2.0.106
+python-telegram-bot>=20.0
+
+# Database
+psycopg2-binary>=2.9.9
+SQLAlchemy>=2.0.0
+
+# Phone Number Handling
+phonenumbers>=8.13.0
+
+# Configuration
+PyYAML>=6.0
+
+# Proxy Support
+PySocks>=1.7.1
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Data Serialization
+orjson>=3.9.0
+
+# Logging
+colorlog>=6.7.0
+
+# Date/Time
+pytz>=2023.3
+
+# Type Hints (development)
+typing-extensions>=4.5.0
+
+# Testing (development)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

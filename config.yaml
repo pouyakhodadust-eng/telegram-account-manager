@@ -1,0 +1,254 @@
+# Telegram Account Management Bot - Configuration
+# All configuration settings for the bot
+
+# Bot Configuration
+bot:
+  # Telegram Bot Token (from @BotFather)
+  token: "${BOT_TOKEN}"
+  
+  # Bot name for display
+  name: "Account Manager"
+  
+  # Session directory for Telethon/Pyrogram session files
+  sessions_dir: "data/sessions"
+  
+  # Export directory for ZIP exports
+  exports_dir: "data/exports"
+
+# Database Configuration (PostgreSQL)
+database:
+  host: "${DB_HOST}"
+  port: 5432
+  username: "${DB_USER}"
+  password: "${DB_PASSWORD}"
+  name: "${DB_NAME}"
+  # Table prefix for data isolation
+  table_prefix: "telegram_account_manager_"
+
+# Proxy Configuration (SOCKS5)
+proxy:
+  # Default proxy settings (can be overridden per user)
+  enabled: false
+  host: "127.0.0.1"
+  port: 1080
+
+# User Whitelist Configuration
+whitelist:
+  # Enable Telegram user ID whitelist
+  enabled: true
+  # Admin user IDs (can modify whitelist)
+  admin_ids:
+    - 123456789
+    - 987654321
+  # Path to file with allowed user IDs (one per line)
+  whitelist_file: "data/whitelist.txt"
+
+# UI Configuration
+ui:
+  # Glass morphism style settings
+  glass:
+    background_color: "rgba(255, 255, 255, 0.1)"
+    border_color: "rgba(255, 255, 255, 0.2)"
+    text_color: "#FFFFFF"
+    button_color: "rgba(255, 255, 255, 0.15)"
+    button_hover_color: "rgba(255, 255, 255, 0.25)"
+  
+  # Emoji mappings for countries
+  country_emojis:
+    US: "🇺🇸"
+    IR: "🇮🇷"
+    RU: "🇷🇺"
+    CN: "🇨🇳"
+    IN: "🇮🇳"
+    GB: "🇬🇧"
+    DE: "🇩🇪"
+    FR: "🇫🇷"
+    CA: "🇨🇦"
+    AU: "🇦🇺"
+    JP: "🇯🇵"
+    KR: "🇰🇷"
+    BR: "🇧🇷"
+    MX: "🇲🇽"
+    ID: "🇮🇩"
+    PH: "🇵🇭"
+    VN: "🇻🇳"
+    TH: "🇹🇭"
+    MY: "🇲🇾"
+    SG: "🇸🇬"
+    HK: "🇭🇰"
+    TW: "🇹🇼"
+    PK: "🇵🇰"
+    BD: "🇧🇩"
+    NG: "🇳🇬"
+    KE: "🇰🇪"
+    EG: "🇪🇬"
+    SA: "🇸🇦"
+    AE: "🇦🇪"
+    TR: "🇹🇷"
+    UA: "🇺🇦"
+    PL: "🇵🇱"
+    NL: "🇳🇱"
+    BE: "🇧🇪"
+    AT: "🇦🇹"
+    CH: "🇨🇭"
+    SE: "🇸🇪"
+    NO: "🇳🇴"
+    DK: "🇩🇰"
+    FI: "🇫🇮"
+    IE: "🇮🇪"
+    PT: "🇵🇹"
+    ES: "🇪🇸"
+    IT: "🇮🇹"
+    GR: "🇬🇷"
+    CZ: "🇨🇿"
+    HU: "🇭🇺"
+    RO: "🇷🇴"
+    BG: "🇧🇬"
+    RS: "🇷🇸"
+    HR: "🇭🇷"
+    SK: "🇸🇰"
+    LT: "🇱🇹"
+    LV: "🇱🇻"
+    EE: "🇪🇪"
+    BY: "🇧🇾"
+    KZ: "🇰🇿"
+    UZ: "🇺🇿"
+    AZ: "🇦🇿"
+    AM: "🇦🇲"
+    GE: "🇬🇪"
+    NZ: "🇳🇿"
+    ZA: "🇿🇦"
+    AR: "🇦🇷"
+    CL: "🇨🇱"
+    CO: "🇨🇴"
+    PE: "🇵🇪"
+    VE: "🇻🇪"
+    EC: "🇪🇨"
+    BO: "🇧🇴"
+    PY: "🇵🇾"
+    UY: "🇺🇾"
+    PA: "🇵🇦"
+    CR: "🇨🇷"
+    GT: "🇬🇹"
+    DO: "🇩🇴"
+    PR: "🇵🇷"
+    CU: "🇨🇺"
+    JM: "🇯🇲"
+    TT: "🇹🇹"
+    BB: "🇧🇧"
+    BS: "🇧🇸"
+    BM: "🇧🇲"
+    KY: "🇰🇾"
+    VG: "🇻🇬"
+    TC: "🇹🇨"
+    AI: "🇦🇮"
+    AG: "🇦🇬"
+    DM: "🇩🇲"
+    GD: "🇬🇩"
+    LC: "🇱🇨"
+    VC: "🇻🇨"
+    KN: "🇰🇳"
+    MQ: "🇲🇶"
+    RE: "🇷🇪"
+    YT: "🇾🇹"
+    PF: "🇵🇫"
+    NC: "🇳🇨"
+    WF: "🇼🇫"
+    FJ: "🇫🇯"
+    PG: "🇵🇬"
+    SB: "🇸🇧"
+    VU: "🇻🇺"
+    TO: "🇹🇴"
+    WS: "🇼🇸"
+    KI: "🇰🇮"
+    NR: "🇳🇷"
+    TV: "🇹🇻"
+    PW: "🇵🇼"
+    MH: "🇲🇭"
+    FM: "🇫🇲"
+    TL: "🇹🇱"
+    GQ: "🇬🇶"
+    CG: "🇨🇬"
+    CD: "🇨🇩"
+    AO: "🇦🇴"
+    ZM: "🇿🇲"
+    ZW: "🇿🇼"
+    MW: "🇲🇼"
+    MZ: "🇲🇿"
+    TZ: "🇹🇿"
+    UG: "🇺🇬"
+    RW: "🇷🇼"
+    BI: "🇧🇮"
+    SN: "🇸🇳"
+    CI: "🇨🇮"
+    GH: "🇬🇭"
+    TG: "🇹🇬"
+    BJ: "🇧🇯"
+    BF: "🇧🇫"
+    ML: "🇲🇱"
+    NE: "🇳🇪"
+    TD: "🇹🇩"
+    CM: "🇨🇲"
+    CF: "🇨🇫"
+    GA: "🇬🇦"
+    GQ2: "🇬🇶"
+    ST: "🇸🇹"
+    CV: "🇨🇻"
+    GN: "🇬🇳"
+    GM: "🇬🇲"
+    SL: "🇸🇱"
+    LR: "🇱🇷"
+    SR: "🇸🇷"
+    GY: "🇬🇾"
+    GF: "🇬🇫"
+    MQ2: "🇲🇶"
+    GL: "🇬🇱"
+    FO: "🇫🇴"
+    IS: "🇮🇸"
+    SJ: "🇸🇯"
+    AX: "🇦🇽"
+    GG: "🇬🇬"
+    IM: "🇮🇲"
+    JE: "🇯🇪"
+    MT: "🇲🇹"
+    LU: "🇱🇺"
+    MC: "🇲🇨"
+    SM: "🇸🇲"
+    VA: "🇻🇦"
+    AD: "🇦🇩"
+    LI: "🇱🇮"
+    AL: "🇦🇱"
+    MK: "🇲🇰"
+    ME: "🇲🇪"
+    BA: "🇧🇦"
+    XK: "🇽🇰"
+    FK: "🇫🇰"
+    GS: "🇬🇸"
+    TF: "🇹🇫"
+    HM: "🇭🇲"
+    BV: "🇧🇻"
+    AQ: "🇦🇶"
+    CW: "🇨🇼"
+    SX: "🇸🇽"
+    BQ: "🇧🇶"
+    SS: "🇸🇸"
+
+# Statistics Configuration
+statistics:
+  # Cache duration in seconds
+  cache_ttl: 300
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/bot.log"
+
+# Export Configuration
+export:
+  # Maximum accounts per bulk export
+  max_per_export: 1000
+  # Supported formats
+  formats:
+    - telethon
+    - pyrogram

@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: telegram_account_manager_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-telegram_manager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+      POSTGRES_DB: ${DB_NAME:-telegram_accounts}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data/whitelist.txt:/data/whitelist.txt:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - telegram_manager_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-telegram_manager} -d ${DB_NAME:-telegram_accounts}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Telegram Account Manager Bot
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telegram_account_manager_bot
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-telegram_manager}
+      DB_PASSWORD: ${DB_PASSWORD:-secure_password}
+      DB_NAME: ${DB_NAME:-telegram_accounts}
+      PYTHONPATH: /app
+    volumes:
+      - ./data/sessions:/app/data/sessions
+      - ./data/exports:/app/data/exports
+      - ./logs:/app/logs
+      - ./data/whitelist.txt:/app/data/whitelist.txt:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - telegram_manager_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  telegram_manager_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
