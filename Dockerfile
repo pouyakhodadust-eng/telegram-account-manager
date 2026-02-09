@@ -35,6 +35,9 @@ COPY --from=builder /install /usr/local
 # Copy application code (only src directory to avoid duplication)
 COPY --chown=appuser:appgroup src/ ./
 
+# Copy configuration file
+COPY --chown=appuser:appgroup config.yaml /app/config.yaml
+
 # Create required directories (mount points for volumes)
 RUN mkdir -p /app/data/{sessions,exports,logs} && \
     chown -R appuser:appgroup /app

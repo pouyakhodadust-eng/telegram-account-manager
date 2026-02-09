@@ -8,22 +8,22 @@ from typing import Optional
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, CallbackQueryHandler, ConversationHandler
 
-from src.models.database import (
+from models.database import (
     get_or_create_user, get_user_accounts, get_user_countries,
     get_user_dates_for_country, get_user_accounts_by_date,
     delete_account, get_user_stats, get_user_proxies,
     add_proxy, delete_proxy, check_user_whitelisted, add_account as db_add_account,
     get_user_by_telegram_id, get_user_accounts_by_country
 )
-from src.utils.country import get_country_from_phone, is_valid_phone, normalize_phone_number
-from src.utils.sessions import export_sessions_zip, get_user_sessions, delete_session
-from src.utils.dates import format_date_for_display, get_date_components
-from src.bot.keyboards import (
+from utils.country import get_country_from_phone, is_valid_phone, normalize_phone_number
+from utils.sessions import export_sessions_zip, get_user_sessions, delete_session
+from utils.dates import format_date_for_display, get_date_components
+from bot.keyboards import (
     get_main_keyboard, get_accounts_keyboard, get_country_selection_keyboard,
     get_date_selection_keyboard, get_account_detail_keyboard, get_export_keyboard,
     get_proxy_keyboard, get_confirm_keyboard, get_country_emoji
 )
-from src.bot.states import States
+from bot.states import States
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ async def back_to_accounts(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     query = update.callback_query
     await query.answer()
     
-    await list_accounts(update, context)
+    await show_accounts(update, context)
 
 
 async def cancel_operation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

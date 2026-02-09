@@ -7,28 +7,49 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON, Index
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON, Index, func
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 from sqlalchemy.pool import QueuePool
+
 
 # Load configuration
 def load_config():
     """Load configuration from config.yaml"""
-    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+    # Try multiple possible locations for config.yaml
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.yaml'),  # /app/config.yaml
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml'),  # /app/src/config.yaml
+        os.path.join(os.getcwd(), 'config.yaml'),  # cwd/config.yaml
+    ]
+    for config_path in possible_paths:
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                return yaml.safe_load(f) or {}
+    return {}
+
+
+def _resolve_env(value, default=None):
+    """Resolve ${VAR} placeholders in config values using environment variables."""
+    if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
+        env_var = value[2:-1]
+        return os.environ.get(env_var, default)
+    return value if value is not None else default
+
 
 config = load_config()
 
 # Database configuration
 DB_CONFIG = config.get('database', {})
-TABLE_PREFIX = DB_CONFIG.get('table_prefix', 'telegram_account_manager_')
+TABLE_PREFIX = _resolve_env(DB_CONFIG.get('table_prefix'), 'telegram_account_manager_')
 
-# Database URL
-DATABASE_URL = (
-    f"postgresql://{DB_CONFIG['username']}:{DB_CONFIG['password']}"
-    f"@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['name']}"
-)
+# Database URL — resolve env var placeholders
+db_user = _resolve_env(DB_CONFIG.get('username'), os.environ.get('DB_USER', 'telegram_manager'))
+db_pass = _resolve_env(DB_CONFIG.get('password'), os.environ.get('DB_PASSWORD', 'secure_password'))
+db_host = _resolve_env(DB_CONFIG.get('host'), os.environ.get('DB_HOST', 'localhost'))
+db_port = _resolve_env(DB_CONFIG.get('port'), os.environ.get('DB_PORT', '5432'))
+db_name = _resolve_env(DB_CONFIG.get('name'), os.environ.get('DB_NAME', 'telegram_accounts'))
+
+DATABASE_URL = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
 # Create SQLAlchemy engine
 engine = create_engine(
@@ -201,16 +222,27 @@ def init_db():
 
 def load_whitelist_from_file():
     """Load whitelist from config file"""
-    whitelist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'whitelist.txt')
+    # Try multiple possible locations for whitelist.txt
+    possible_paths = [
+        '/app/data/whitelist.txt',  # Docker mount path
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'whitelist.txt'),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'whitelist.txt'),
+    ]
+    whitelist_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            whitelist_path = p
+            break
+    if whitelist_path is None:
+        return
     
-    if os.path.exists(whitelist_path):
-        with open(whitelist_path, 'r') as f:
-            for line in f:
-                telegram_id = line.strip()
-                if telegram_id and telegram_id.isdigit():
-                    # Add to whitelist if not exists
-                    if not check_user_whitelisted(int(telegram_id)):
-                        add_to_whitelist(int(telegram_id))
+    with open(whitelist_path, 'r') as f:
+        for line in f:
+            telegram_id = line.strip()
+            if telegram_id and telegram_id.isdigit():
+                # Add to whitelist if not exists
+                if not check_user_whitelisted(int(telegram_id)):
+                    add_to_whitelist(int(telegram_id))
 
 
 # ============================================================================
@@ -578,8 +610,4 @@ def get_whitelist() -> List[WhitelistEntry]:
         return db.query(WhitelistEntry).all()
 
 
-# ============================================================================
-# Helper Imports
-# ============================================================================
-
-from sqlalchemy import func
+# func is imported at the top with other sqlalchemy imports

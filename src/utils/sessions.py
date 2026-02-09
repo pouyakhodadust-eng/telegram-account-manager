@@ -75,7 +75,8 @@ def export_pyrogram_format(session_files: List[Path], output_dir: Path) -> List[
 def export_sessions(
     session_files: List[Path],
     format: str = 'telethon',
-    count: Optional[int] = None
+    count: Optional[int] = None,
+    output_dir: Optional[Path] = None
 ) -> Path:
     """
     Export session files in the specified format.
@@ -84,20 +85,23 @@ def export_sessions(
         session_files: List of session file paths to export
         format: Export format ('telethon' or 'pyrogram')
         count: Maximum number of sessions to export (None for all)
+        output_dir: Optional output directory (created if not provided)
         
     Returns:
-        Path to the exported file or directory
+        Tuple of (output_dir, exported_files)
     """
     # Limit count if specified
     if count and count > 0:
         session_files = session_files[:count]
     
-    exports_dir = get_exports_dir()
-    exports_dir.mkdir(exist_ok=True)
+    if output_dir is None:
+        exports_dir = get_exports_dir()
+        exports_dir.mkdir(exist_ok=True)
+        
+        # Create a timestamped subdirectory for this export
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_dir = exports_dir / f"export_{timestamp}"
     
-    # Create a timestamped subdirectory for this export
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    output_dir = exports_dir / f"export_{timestamp}"
     output_dir.mkdir(exist_ok=True)
     
     # Export in the specified format

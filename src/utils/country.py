@@ -7,12 +7,11 @@ Supports hiding empty categories by tracking countries with actual accounts.
 
 from typing import Optional
 
+import phonenumbers
 from phonenumbers import PhoneNumberFormat
-from phonenumbers import carrier
 from phonenumbers import geocoder
 from phonenumbers import NumberParseException
 from phonenumbers import PhoneNumber
-from phonenumbers import number_type
 
 
 class CountryDetector:
@@ -313,7 +312,7 @@ class CountryDetector:
         
         try:
             # Parse the phone number
-            parsed: PhoneNumber = carrier.phone_number_object(clean_number)
+            parsed: PhoneNumber = phonenumbers.parse(clean_number, None)
             
             # Extract country code and national number
             country_code = f"+{parsed.country_code}"
@@ -342,10 +341,10 @@ class CountryDetector:
                     )
             
             # Get region code
-            region_code = geocoder.region_code_for_number(parsed)
+            region_code = phonenumbers.region_code_for_number(parsed)
             
             # Determine if it's a mobile or fixed line
-            phone_type = number_type(parsed)
+            phone_type = phonenumbers.number_type(parsed)
             # number_type returns: 0=FIXED_LINE, 1=MOBILE, 2=FIXED_LINE_OR_MOBILE
             is_mobile = phone_type in (1, 2)
             
@@ -383,7 +382,7 @@ class CountryDetector:
         Returns:
             Formatted phone number string
         """
-        return carrier.format_number(
+        return phonenumbers.format_number(
             phone, 
             PhoneNumberFormat.INTERNATIONAL
         )

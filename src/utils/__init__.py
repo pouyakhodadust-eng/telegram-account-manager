@@ -8,8 +8,8 @@ from .country import (
     get_carrier,
     normalize_phone_number,
     format_phone_display,
-    COUNTRY_EMOJIS,
-    ISO_COUNTRY_NAMES
+    get_country_info,
+    get_country_detector,
 )
 from .proxy import (
     validate_proxy,
@@ -37,8 +37,8 @@ __all__ = [
     'get_carrier',
     'normalize_phone_number',
     'format_phone_display',
-    'COUNTRY_EMOJIS',
-    'ISO_COUNTRY_NAMES',
+    'get_country_info',
+    'get_country_detector',
     'validate_proxy',
     'parse_proxy_string',
     'create_proxy_url',

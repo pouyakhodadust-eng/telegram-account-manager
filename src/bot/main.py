@@ -11,7 +11,6 @@ A sophisticated Telegram bot for managing Telegram accounts with:
 
 import asyncio
 import logging
-import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -25,13 +24,10 @@ from telegram.ext import (
     filters,
 )
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.utils.config import config
-from src.utils.country import get_country_info
-from src.models.database import init_db, User
-from src.bot.keyboards import MainKeyboard
+from utils.config import config
+from utils.country import get_country_info
+from models.database import init_db, User
+from bot.keyboards import get_main_keyboard
 
 # Configure logging
 logging.basicConfig(
@@ -145,7 +141,6 @@ class TelegramAccountManagerBot:
                 "❌ **Access Denied**\n\n"
                 "You are not authorized to use this bot.\n"
                 "Please contact the administrator.",
-                reply_markup=MainKeyboard.get_empty_keyboard()
             )
             return
         
@@ -167,7 +162,7 @@ class TelegramAccountManagerBot:
         
         await update.message.reply_text(
             welcome_text,
-            reply_markup=MainKeyboard.get_keyboard(),
+            reply_markup=get_main_keyboard(),
             parse_mode="Markdown",
         )
     
@@ -203,7 +198,7 @@ class TelegramAccountManagerBot:
         
         await update.message.reply_text(
             help_text,
-            reply_markup=MainKeyboard.get_keyboard(),
+            reply_markup=get_main_keyboard(),
             parse_mode="Markdown",
         )
     
@@ -401,7 +396,7 @@ class TelegramAccountManagerBot:
             title, text = handlers[data]
             await callback.edit_message_text(
                 f"**{title}**\n\n{text}",
-                reply_markup=MainKeyboard.get_keyboard(),
+                reply_markup=get_main_keyboard(),
                 parse_mode="Markdown",
             )
         else:

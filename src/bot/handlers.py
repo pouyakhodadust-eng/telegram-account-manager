@@ -6,24 +6,24 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.ext import CallbackQueryHandler
 
-from src.models.database import (
+from models.database import (
     get_or_create_user, get_user_accounts, get_user_countries,
     get_user_dates_for_country, get_user_accounts_by_date,
     delete_account, get_user_stats, get_user_proxies,
     add_proxy, delete_proxy, check_user_whitelisted,
     add_account as db_add_account
 )
-from src.utils.country import get_country_from_phone, is_valid_phone, normalize_phone_number
-from src.bot.keyboards import (
+from utils.country import get_country_from_phone, is_valid_phone, normalize_phone_number
+from bot.keyboards import (
     get_main_keyboard, get_accounts_keyboard, get_country_selection_keyboard,
     get_date_selection_keyboard, get_account_detail_keyboard, get_export_keyboard,
     get_proxy_keyboard, get_admin_keyboard, get_confirm_keyboard, get_country_emoji
 )
-from src.bot.states import States
-from src.bot.callbacks import (
+from bot.states import States
+from bot.callbacks import (
     show_accounts, select_country, select_date, show_account_detail,
     confirm_delete_account, export_menu, proxy_menu, proxy_add_start,
-    proxy_delete_execute, admin_panel, admin_stats, admin_export_all,
+    proxy_delete_execute, admin_panel, admin_stats,
     back_to_menu, cancel_operation, skip_2fa
 )
 
