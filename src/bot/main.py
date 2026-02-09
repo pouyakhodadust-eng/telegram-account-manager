@@ -26,7 +26,12 @@ from telegram.ext import (
 from utils.config import config
 from utils.country import get_country_info
 from models.database import init_db, User
-from bot.keyboards import get_main_keyboard
+from bot.keyboards import (
+    get_main_keyboard,
+    get_export_keyboard,
+    get_proxy_keyboard,
+    format_glass_message,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -212,10 +217,14 @@ class TelegramAccountManagerBot:
             update: Telegram update
             context: Callback context
         """
-        await self.handle_callback_query(
-            update.callback_query,
-            "main_menu",
-            context
+        await update.message.reply_text(
+            format_glass_message(
+                "Main Menu",
+                "Select an option from below:",
+                "🔐",
+            ),
+            reply_markup=get_main_keyboard(),
+            parse_mode="Markdown",
         )
     
     async def handle_contact(
@@ -300,8 +309,18 @@ class TelegramAccountManagerBot:
         
         logger.info(f"Received callback: {data}")
         
-        # Route to appropriate handler
-        if data.startswith("country_"):
+        # Explicit matches for main menu / navigation callbacks first,
+        # so they don't get swallowed by prefix-based routing below.
+        GENERAL_CALLBACKS = {
+            "main_menu", "back_to_menu", "add_account", "accounts",
+            "export_bulk", "stats", "proxy_menu", "help", "cancel",
+            "select_country", "admin_panel",
+        }
+        
+        if data in GENERAL_CALLBACKS:
+            await self.handle_general_callback(callback, data, context)
+        # Prefix-based routing for parameterized callbacks
+        elif data.startswith("country_"):
             await self.handle_country_callback(callback, data, context)
         elif data.startswith("date_"):
             await self.handle_date_callback(callback, data, context)
@@ -379,26 +398,148 @@ class TelegramAccountManagerBot:
         data: str,
         context: CallbackContext
     ) -> None:
-        """Handle general callbacks."""
-        handlers = {
-            "main_menu": ("🔐 Main Menu", "Select an option:"),
-            "add_account": ("➕ Add Account", "Send the phone number to add:"),
-            "accounts": ("👥 My Accounts", "Loading..."),
-            "export_bulk": ("📤 Export Accounts", "Select export format:"),
-            "stats": ("📊 Statistics", "Loading..."),
-            "proxy_menu": ("🔧 Proxy Settings", "Select an option:"),
-            "help": ("ℹ️ Help", "Use this bot to manage multiple Telegram accounts.\n\nFeatures:\n• Add accounts with phone numbers\n• View and manage accounts by country\n• Export sessions\n• Proxy support"),
-        }
-        
-        if data in handlers:
-            title, text = handlers[data]
+        """Handle general / navigation callbacks."""
+
+        if data in ("main_menu", "back_to_menu"):
             await callback.edit_message_text(
-                f"**{title}**\n\n{text}",
+                format_glass_message(
+                    "Main Menu",
+                    "Select an option from below:",
+                    "🔐",
+                ),
                 reply_markup=get_main_keyboard(),
                 parse_mode="Markdown",
             )
+
+        elif data == "add_account":
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Add Account",
+                    "Send the phone number (with country code) to add a new account.\n\n"
+                    "Example: `+14155552671`",
+                    "➕",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "accounts":
+            # TODO: Load real accounts from database
+            await callback.edit_message_text(
+                format_glass_message(
+                    "My Accounts",
+                    "You have no accounts yet.\n\n"
+                    "Use **➕ Add Account** to get started.",
+                    "📱",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "export_bulk":
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Bulk Export",
+                    "Select the session format to export:",
+                    "📦",
+                ),
+                reply_markup=get_export_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "stats":
+            # TODO: Load real statistics from database
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Statistics",
+                    "📱 **Total accounts:** 0\n"
+                    "🌍 **Countries:** 0\n"
+                    "📅 **Last added:** N/A",
+                    "📊",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "proxy_menu":
+            # TODO: Load real proxies from database
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Proxy Manager",
+                    "No proxies configured.\n\n"
+                    "Add a SOCKS5 proxy to route account connections.",
+                    "🔒",
+                ),
+                reply_markup=get_proxy_keyboard([]),
+                parse_mode="Markdown",
+            )
+
+        elif data == "help":
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Help",
+                    "Use this bot to manage multiple Telegram accounts.\n\n"
+                    "**Features:**\n"
+                    "• Add accounts with phone numbers\n"
+                    "• View and manage accounts by country\n"
+                    "• Export Telethon / Pyrogram session files\n"
+                    "• SOCKS5 proxy support\n\n"
+                    "**Commands:**\n"
+                    "/start - Start the bot\n"
+                    "/menu  - Show main menu\n"
+                    "/help  - Show this help",
+                    "❓",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "select_country":
+            # TODO: Load real countries from database
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Select Country",
+                    "No countries with accounts found yet.",
+                    "🌍",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "admin_panel":
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Admin Panel",
+                    "Manage users, view global statistics, and export data.",
+                    "⚙️",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
+        elif data == "cancel":
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Cancelled",
+                    "Operation cancelled. Returning to main menu.",
+                    "❌",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
+
         else:
-            await callback.edit_message_text(f"Callback: {data}")
+            logger.warning(f"Unhandled callback data: {data}")
+            await callback.edit_message_text(
+                format_glass_message(
+                    "Unknown Action",
+                    "This action is not yet implemented.\n"
+                    "Returning to main menu.",
+                    "⚠️",
+                ),
+                reply_markup=get_main_keyboard(),
+                parse_mode="Markdown",
+            )
     
     def run(self) -> None:
         """Start the bot."""
