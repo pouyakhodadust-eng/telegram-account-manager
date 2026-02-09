@@ -32,11 +32,11 @@ RUN groupadd --gid 1000 appgroup && \
 # Copy installed Python packages
 COPY --from=builder /install /usr/local
 
-# Copy application code
-COPY --chown=appuser:appgroup . .
+# Copy application code (only src directory to avoid duplication)
+COPY --chown=appuser:appgroup src/ ./
 
-# Create required directories
-RUN mkdir -p /app/src/data/{sessions,exports,logs} && \
+# Create required directories (mount points for volumes)
+RUN mkdir -p /app/data/{sessions,exports,logs} && \
     chown -R appuser:appgroup /app
 
 # Switch to non-root user
