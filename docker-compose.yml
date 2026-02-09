@@ -32,9 +32,10 @@ services:
     env_file:
       - .env
     environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_API_ID: ${TELEGRAM_API_ID}
-      TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+      # Map .env vars to what config.py expects (bot.token → BOT_TOKEN)
+      BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      BOT_API_ID: ${TELEGRAM_API_ID}
+      BOT_API_HASH: ${TELEGRAM_API_HASH}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${DB_USER:-telegram_manager}
