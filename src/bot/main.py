@@ -65,7 +65,6 @@ class TelegramAccountManagerBot:
             ApplicationBuilder()
             .token(self.token)
             .concurrent_updates(10)
-            .pool_semaphore(None)
             .build()
         )
         
