@@ -57,9 +57,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port (for health checks and metrics)
 EXPOSE 8080
 
-# Entry point - run the Telegram bot
-# Note: The bot handles its own polling, web server is optional for metrics
-CMD ["python", "bot.main.py"]
+# Entry point - run the Telegram bot using module syntax
+# The bot handles its own polling, web server is optional for metrics
+CMD ["python", "-m", "bot.main"]
 
 # ============================================================================
 # Development Instructions (run locally, not in Docker)
