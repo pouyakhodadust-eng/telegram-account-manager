@@ -447,3 +447,39 @@ def get_country_info(phone_number: str) -> dict:
     """
     detector = get_country_detector()
     return detector.detect(phone_number)
+
+
+def get_country_from_phone(phone_number: str) -> str:
+    """Get country name from phone number."""
+    info = get_country_info(phone_number)
+    return info.get("country_name", "Unknown")
+
+
+def get_country_code(phone_number: str) -> str:
+    """Get country code from phone number."""
+    info = get_country_info(phone_number)
+    return info.get("country_code", "")
+
+
+def is_valid_phone(phone_number: str) -> bool:
+    """Check if phone number is valid."""
+    info = get_country_info(phone_number)
+    return info.get("is_valid", False)
+
+
+def get_carrier(phone_number: str) -> str:
+    """Get carrier name from phone number."""
+    info = get_country_info(phone_number)
+    return info.get("carrier", "")
+
+
+def normalize_phone_number(phone_number: str) -> str:
+    """Normalize phone number to E.164 format."""
+    info = get_country_info(phone_number)
+    return info.get("e164_format", phone_number)
+
+
+def format_phone_display(phone_number: str) -> str:
+    """Format phone number for display."""
+    info = get_country_info(phone_number)
+    return info.get("formatted", phone_number)
