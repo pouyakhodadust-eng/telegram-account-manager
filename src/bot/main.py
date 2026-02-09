@@ -382,12 +382,12 @@ class TelegramAccountManagerBot:
         """Handle general callbacks."""
         handlers = {
             "main_menu": ("🔐 Main Menu", "Select an option:"),
-            "account_add": ("➕ Add Account", "Send the phone number to add:"),
-            "accounts_list": ("👥 My Accounts", "Loading..."),
-            "delivery_menu": ("📤 Deliver Accounts", "Select delivery method:"),
-            "statistics": ("📊 Statistics", "Loading..."),
+            "add_account": ("➕ Add Account", "Send the phone number to add:"),
+            "accounts": ("👥 My Accounts", "Loading..."),
+            "export_bulk": ("📤 Export Accounts", "Select export format:"),
+            "stats": ("📊 Statistics", "Loading..."),
             "proxy_menu": ("🔧 Proxy Settings", "Select an option:"),
-            "help": ("ℹ️ Help", "Loading..."),
+            "help": ("ℹ️ Help", "Use this bot to manage multiple Telegram accounts.\n\nFeatures:\n• Add accounts with phone numbers\n• View and manage accounts by country\n• Export sessions\n• Proxy support"),
         }
         
         if data in handlers:
