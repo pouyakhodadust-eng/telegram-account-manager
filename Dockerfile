@@ -62,13 +62,19 @@ ENTRYPOINT ["python", "-m", "uvicorn", "bot.web:app", "--host", "0.0.0.0", "--po
 # ============================================================================
 FROM production AS development
 
-# Install development dependencies
-RUN pip install --no-cache-dir --prefix=/install \
+# Switch back to root for package installation
+USER root
+
+# Install development dependencies (as root)
+RUN pip install --no-cache-dir \
     pytest \
     pytest-asyncio \
     black \
     flake8 \
     mypy
+
+# Switch back to non-root user
+USER appuser
 
 # Re-copy with development files
 COPY --chown=appuser:appgroup . .
