@@ -549,24 +549,6 @@ class TelegramAccountManagerBot:
         self.app.run_polling()
 
 
-async def handle_callback_query(
-    callback,
-    data: str,
-    context: CallbackContext
-) -> None:
-    """
-    Route callback queries to appropriate handlers.
-    
-    Args:
-        callback: CallbackQuery object
-        data: Callback data
-        context: Callback context
-    """
-    bot = context.bot_data.get("bot")
-    if bot:
-        await bot.handle_callback(callback, data, context)
-
-
 def main() -> None:
     """Main entry point."""
     # Create data directories
