@@ -5,6 +5,8 @@ Automatically detects country from phone number using libphonenumber.
 Supports hiding empty categories by tracking countries with actual accounts.
 """
 
+from typing import Optional
+
 from phonenumbers import PhoneNumberFormat
 from phonenumbers import carrier
 from phonenumbers import geocoder
