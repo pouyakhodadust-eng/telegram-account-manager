@@ -400,12 +400,12 @@ class TelegramAccountManagerBot:
         else:
             await callback.edit_message_text(f"Callback: {data}")
     
-    async def run(self) -> None:
+    def run(self) -> None:
         """Start the bot."""
         logger.info("Starting Telegram Account Manager Bot...")
         
         # For python-telegram-bot v20+, use run_polling which handles everything
-        await self.app.run_polling()
+        self.app.run_polling()
 
 
 async def handle_callback_query(
