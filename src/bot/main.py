@@ -405,19 +405,8 @@ class TelegramAccountManagerBot:
         """Start the bot."""
         logger.info("Starting Telegram Account Manager Bot...")
         
-        # Start the bot
-        await self.app.start()
-        await self.app.updater.start_polling()
-        
-        logger.info("Bot is running!")
-        
-        # Run until interrupted
-        try:
-            await asyncio.Event().wait()
-        except (KeyboardInterrupt, asyncio.CancelledError):
-            logger.info("Shutting down...")
-            await self.app.updater.stop()
-            await self.app.stop()
+        # For python-telegram-bot v20+, use run_polling which handles everything
+        await self.app.run_polling()
 
 
 async def handle_callback_query(
