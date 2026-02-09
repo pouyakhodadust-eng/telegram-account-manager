@@ -4,7 +4,7 @@
 # Bot Configuration
 bot:
   # Telegram Bot Token (from @BotFather)
-  token: "${BOT_TOKEN}"
+  token: "${TELEGRAM_BOT_TOKEN}"
   
   # Bot name for display
   name: "Account Manager"
