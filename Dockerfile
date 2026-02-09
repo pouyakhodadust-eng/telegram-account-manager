@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 # ============================================================================
 FROM python:3.11-slim-bookworm AS production
 
-WORKDIR /app
+WORKDIR /app/src
 
 # Create non-root user
 RUN groupadd --gid 1000 appgroup && \
@@ -36,14 +36,14 @@ COPY --from=builder /install /usr/local
 COPY --chown=appuser:appgroup . .
 
 # Create required directories
-RUN mkdir -p /app/data/{sessions,exports,logs} && \
+RUN mkdir -p /app/src/data/{sessions,exports,logs} && \
     chown -R appuser:appgroup /app
 
 # Switch to non-root user
 USER appuser
 
 # Environment variables
-ENV PYTHONPATH=/app \
+ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 

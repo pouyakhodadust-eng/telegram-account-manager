@@ -11,8 +11,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./data/whitelist.txt:/data/whitelist.txt:ro
-    ports:
-      - "5432:5432"
+    # Remove host port binding - use internal networking only
+    # ports:
+    #   - "5432:5432"
     networks:
       - telegram_manager_network
     healthcheck:
@@ -41,8 +42,9 @@ services:
       - ./data/exports:/app/data/exports
       - ./logs:/app/logs
       - ./data/whitelist.txt:/app/data/whitelist.txt:ro
-    ports:
-      - "8080:8080"
+    # Remove host port binding - bot only needs internal networking
+    # ports:
+    #   - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
