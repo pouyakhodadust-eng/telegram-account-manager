@@ -10,7 +10,7 @@ from phonenumbers import carrier
 from phonenumbers import geocoder
 from phonenumbers import NumberParseException
 from phonenumbers import PhoneNumber
-from phonenumbers import phone_number_type
+from phonenumbers import number_type
 from phonenumbers import NumberType
 
 
@@ -344,7 +344,7 @@ class CountryDetector:
             region_code = geocoder.region_code_for_number(parsed)
             
             # Determine if it's a mobile or fixed line
-            phone_type = phone_number_type(parsed)
+            phone_type = number_type(parsed)
             is_mobile = phone_type in (
                 NumberType.MOBILE,
                 NumberType.FIXED_LINE_OR_MOBILE
