@@ -57,8 +57,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port (for health checks and metrics)
 EXPOSE 8080
 
-# Entry point
-ENTRYPOINT ["uvicorn", "bot.web:app", "--host", "0.0.0.0", "--port", "8080"]
+# Entry point - run the Telegram bot
+# Note: The bot handles its own polling, web server is optional for metrics
+CMD ["python", "bot.main.py"]
 
 # ============================================================================
 # Development Instructions (run locally, not in Docker)
