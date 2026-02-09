@@ -58,25 +58,10 @@ EXPOSE 8080
 ENTRYPOINT ["uvicorn", "bot.web:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # ============================================================================
-# Development Stage (optional)
+# Development Instructions (run locally, not in Docker)
 # ============================================================================
-FROM production AS development
-
-# Switch back to root for package installation
-USER root
-
-# Install development dependencies (as root)
-RUN pip install --no-cache-dir \
-    pytest \
-    pytest-asyncio \
-    black \
-    flake8 \
-    mypy
-
-# Switch back to non-root user
-USER appuser
-
-# Re-copy with development files
-COPY --chown=appuser:appgroup . .
-
-CMD ["python", "-m", "bot.main"]
+# To run locally for development:
+# 1. Create a virtual environment: python -m venv venv
+# 2. Activate it: source venv/bin/activate
+# 3. Install deps: pip install -r requirements.txt
+# 4. Run: python -m bot.main
