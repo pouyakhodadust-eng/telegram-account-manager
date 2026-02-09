@@ -67,16 +67,16 @@ class TelegramAccountManagerBot:
             .build()
         )
         
-        # Initialize database
+        # Initialize database (not async, called before event loop starts)
         self._init_database()
         
         # Add handlers
         self._add_handlers()
     
-    async def _init_database(self) -> None:
+    def _init_database(self) -> None:
         """Initialize the database."""
         logger.info("Initializing database...")
-        await init_db()
+        init_db()
         logger.info("Database initialized successfully")
     
     def _add_handlers(self) -> None:
