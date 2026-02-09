@@ -9,7 +9,6 @@ A sophisticated Telegram bot for managing Telegram accounts with:
 - Glass-style UI
 """
 
-import asyncio
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -437,8 +436,8 @@ def main() -> None:
     # Create and run the bot
     bot = TelegramAccountManagerBot()
     
-    # Run the bot
-    asyncio.run(bot.run())
+    # Run the bot (run_polling handles its own event loop)
+    bot.run()
 
 
 if __name__ == "__main__":
